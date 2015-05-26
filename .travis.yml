@@ -3,6 +3,7 @@ python: '2.7'
 virtualenv:
   system_site_packages: true
 services: mysql
+sudo: required
 before_install:
   - echo "USE mysql;\nUPDATE user SET password=PASSWORD('foobar') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
 install: true
