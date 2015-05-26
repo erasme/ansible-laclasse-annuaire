@@ -1,0 +1,12 @@
+language: python
+python: '2.7'
+virtualenv:
+  system_site_packages: true
+services: mysql
+before_install:
+  - echo "USE mysql;\nUPDATE user SET password=PASSWORD('foobar') WHERE user='root';\nFLUSH PRIVILEGES;\n" | mysql -u root
+install: true
+script: ./tests/specs.sh --install $(echo $TRAVIS_REPO_SLUG | cut -f2 -d'/')
+notifications:
+  slack:
+    secure: f4s+CrjKmv58411G0QNkR5cro7MkzlIxAuujYovn/wA59LSvKNF/aK+wwrBya1IQZfH80CmcHZGKOKBVM7dDpnsEMkH5U/9Fu3NO1M8YqPcSQWSXvkEdvbkUgWoXbkUOWqxsbbe5SiBnbYDj40Z6zR5oWe/j79QmNb5Hj9UWDws=

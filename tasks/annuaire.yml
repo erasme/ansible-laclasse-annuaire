@@ -1,0 +1,238 @@
+- set_fact: database_delegate_hostname="{{ inventory_hostname }}"
+  when: "'{{ laclasse_annuaire_database.host }}' == 'localhost'"
+
+- set_fact: database_delegate_hostname="{{ laclasse_annuaire_database.host }}"
+  when: "'{{ laclasse_annuaire_database.host }}' != 'localhost'"
+
+# Delegate to localhost forcibly when testing on vagrant
+- set_fact: database_delegate_hostname="localhost"
+  when: ansible_env.ROLESPEC_TEST is defined
+
+- set_fact: database_client_hostname="{{ inventory_hostname }}"
+  when: "'{{ laclasse_annuaire_database.host }}' != 'localhost'"
+
+- set_fact: database_client_hostname="localhost"
+  when: "'{{ laclasse_annuaire_database.host }}' == 'localhost'"
+
+- name: Creates deploy user
+  user: 
+    name={{ laclasse_annuaire_deploy_user }} 
+    comment="Laclasse annuaire user"
+    state=present
+
+- name: Creates deploy directory
+  file: 
+    path=~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/ 
+    owner={{ laclasse_annuaire_deploy_user }} 
+    state=directory
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Checkout app
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  git:
+    repo={{ laclasse_annuaire_repos }}
+    dest=~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/
+    version={{ laclasse_annuaire_version }}
+    accept_hostkey=true
+  register: new_version
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Gets current tag
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/ && git describe --always --tag
+  changed_when: false
+  register: git_tag
+
+- debug: var=git_tag.stdout
+
+- name: Installs necessary prereqs
+  apt: pkg={{ item }} state=latest
+  with_items: laclasse_annuaire_packages|default([])
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Check if a bundle is required
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle check --no-color || true'
+  changed_when: bundle_required.stdout != "The Gemfile's dependencies are satisfied"
+  register: bundle_required
+
+- name: Bundles application
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle --no-color'
+  when: bundle_required|changed
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Adds version.json
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  template:
+    src="../templates/version.json.j2"
+    dest="~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/public/version.json"
+    backup=true
+
+- name: Adds application config
+  template: src="../templates/{{ item }}.j2"
+    dest="~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/config/{{ item }}"
+    owner={{ laclasse_annuaire_deploy_user }}
+    group={{ laclasse_annuaire_deploy_user }}
+    mode=640
+  register: new_config
+  with_items:
+    - database.rb
+    - options.rb
+    - common.rb
+    - puma.rb
+  notify: 
+    - Restart laclasse-annuaire
+  tags: laclasse:annuaire:config
+  
+- name: Adds bootstrap script
+  template:
+    src="../templates/bootstrap.rb.j2"
+    dest="~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/db/scripts/bootstrap.rb"
+    owner={{ laclasse_annuaire_deploy_user }}
+    group={{ laclasse_annuaire_deploy_user }}
+    mode=750
+  tags: laclasse:annuaire:config
+
+- name: Creates PID and log dirs
+  file: dest={{ item }}/laclasse-annuaire/
+    owner={{ laclasse_annuaire_deploy_user }}
+    group={{ laclasse_annuaire_deploy_user }}
+    mode=750
+    state=directory
+  with_items:
+    - "{{laclasse_log_parent_dir}}"
+  notify: 
+    - Restart laclasse-annuaire services
+  tags: laclasse:annuaire:config
+
+- name: Creates database
+  mysql_db: name="{{ laclasse_annuaire_database.name }}" state=present
+  delegate_to: "{{database_delegate_hostname}}"
+  register: db_created
+
+- name: Creates database user
+  mysql_user:
+    user="{{ laclasse_annuaire_database.user }}"
+    password="{{ laclasse_annuaire_database.password }}"
+    priv="{{ laclasse_annuaire_database.name }}.*:ALL"
+    host="{{ database_client_hostname }}"
+  delegate_to: "{{ database_delegate_hostname }}"
+  register: dbuser_created
+
+- name: Check if a migration is needed
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: >
+    cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'RACK_ENV={{ laclasse_environment }} bundle exec rake  db:check_migrate'
+  register: db_migrate_required
+  changed_when: db_migrate_required.rc == 1
+  when: new_version|changed  
+  failed_when: false
+
+- name: Migrates Database
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'RACK_ENV={{ laclasse_environment }} bundle exec rake db:migrations'
+  when:  new_version|changed and db_migrate_required.rc == 1
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Bootstraps Database
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'RACK_ENV={{ laclasse_environment }} bundle exec rake db:bootstrap'
+  when: db_created|changed or dbuser_created|changed
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Bootstraps Ressources
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'RACK_ENV={{ laclasse_environment }} bundle exec rake db:bootstrap_ressources'
+  when: db_created|changed or dbuser_created|changed
+  notify: 
+    - Restart laclasse-annuaire services
+
+- name: Creates database dumps
+  template:
+    src="../templates/{{item}}.sql.j2"
+    dest="/tmp/{{item}}.sql"
+  delegate_to: "{{database_delegate_hostname}}"
+  when: db_created|changed or dbuser_created|changed or new_version|changed
+  with_items:
+    - apps
+    - apikeys
+
+- name: Imports applications into database
+  mysql_db: name={{ laclasse_annuaire_database.name }} state=import target='/tmp/{{item}}.sql'
+  delegate_to: "{{database_delegate_hostname}}"
+  when: db_created|changed or dbuser_created|changed or new_version|changed
+  notify: Restart laclasse-annuaire
+  ignore_errors: true
+  with_items:
+    - apps
+    - apikeys
+
+# - name: Removes dump
+#   file: path='/tmp/apps.sql' state=absent
+#   delegate_to: "{{laclasse_annuaire_database.host}}"
+#   when: db_created|changed or dbuser_created|changed
+
+- name: Binstubs puma
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc "bundle binstubs puma"
+  register: puma_has_been_binstubbed
+  changed_when: '"Skipped puma since it already exists" in puma_has_been_binstubbed'
+  notify: Restart laclasse-annuaire
+
+- name: Binstubs sidekiq
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc "bundle binstubs sidekiq"
+  register: sidekiq_has_been_binstubbed
+  changed_when: '"Skipped sidekiq and sidekiqctl since they already exist" in sidekiq_has_been_binstubbed'
+  notify: Restart laclasse-sidekiq-annuaire
+
+- name: Deploys init script
+  template: src="../templates/{{item}}.init.j2" dest=/etc/init.d/{{item}} mode=0770
+  notify: 
+    - Restart laclasse-annuaire services
+  with_items:
+    - laclasse-annuaire
+    - laclasse-sidekiq-annuaire
+  tags: laclasse:annuaire:config
+
+- name: Registers init script
+  #shell: update-rc.d laclasse-annuaire defaults
+  service: name="{{ item }}" enabled=yes
+  notify:
+    - Restart laclasse-annuaire services
+  with_items:
+    - laclasse-annuaire
+    - laclasse-sidekiq-annuaire
+  tags: laclasse:annuaire:config
+
+- name: Check if firewall is opened
+  shell: iptables-save
+  register: needs_iptables
+  changed_when: needs_iptables.stdout.find("laclasse-annuaire") == -1
+  when: laclasse_environment == 'production'
+
+- name: Open firewall
+  shell: iptables -A TCP_IN -p tcp -m tcp --dport {{ laclasse_annuaire_port }} -j ACCEPT -m comment --comment laclasse-annuaire
+  ignore_errors: true
+  when: needs_iptables | changed and laclasse_environment == 'production'
+
+- name: Saves firewall
+  shell: iptables-save > {{ firewall.rules_file }}
+  when: needs_iptables | changed and laclasse_environment == 'production'
+

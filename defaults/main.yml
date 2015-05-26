@@ -1,0 +1,124 @@
+# General laclasse defines
+
+## Environment we're running under
+laclasse_environment: develop
+## Parent directory in which we'll crete log dir for this role
+laclasse_log_parent_dir: /var/log
+## Mail setup
+laclasse_mail:
+  smtp_server: some.smtp.server
+  smtp_port: 587
+  smtp_starttls: true
+  domain: example.org
+  imap_backends:
+    - imap1.example.org
+    - imap2.example.org
+## Main server URL
+laclasse_main_url: http://www.example.org
+## Where should we put PIDs    
+laclasse_pid_dir: /var/run/
+# Puma authentication token for stats
+laclasse_puma_auth_token: exampleorg
+## Redis server parameters
+laclasse_redis_server: redis.example.org
+laclasse_redis_port: 6379
+laclasse_redis_root: 'org:example:laclasse'
+## Slack notifications parameters
+laclasse_slack:
+  host: localhost
+  channel: none
+  token: none
+## Logstash server parameters
+logstash_server: logstash.example.org
+logstash_udp_json_port: 1234
+
+# Some external definitions we depend on
+# This is here to have a default
+# In real life, all services should be declared in the master playbook
+
+## CAS server definitions
+laclasse_sso_disable_ssl_verification: 'false'
+laclasse_sso_login_url: '/login'
+laclasse_sso_logout_url: '/logout'
+laclasse_sso_logout_saml: '/saml/logout'
+laclasse_sso_port: 443
+laclasse_sso_restmod_url: '/restmod'
+laclasse_sso_server: cas.example.org
+laclasse_sso_service_validate_url: '/service_validate'
+laclasse_sso_ssl: 'true'
+
+## Roundcube Email definitions
+laclasse_webmail_plugins:
+  roundcube_laclasse_sso:
+    secret_imap_master_password: "foobar"
+
+### SSO redis root
+laclasse_sso_redis_root: '{{ laclasse_redis_root }}:sso'
+
+# All deployed services
+# This is here to have a default
+# In real life, all services should be declared in the master playbook
+
+laclasse_services:
+  annuaire:
+    api_key: ''
+    api_mode: ''
+    app_id: 'ANNUAIRE'
+    title: 'Annuaire'
+    description: 'Annuaire'
+    path: '/'
+  adminpanel:
+    path: '/adminpanel'
+    api_key: ''
+    api_mode: ''
+    app_id: 'ADMIN'
+    title: 'Annuaire'
+    description: "Panneau d'administration"
+
+# Annuaire specific defines
+
+laclasse_annuaire_aaf_url: https://www.dev.example.org/annuaire
+laclasse_annuaire_app_component: 'app'
+laclasse_annuaire_bootstrap_key: http://someurl/
+laclasse_annuaire_database:
+  name: dbname
+  user: username
+  host: dbhost
+  password: "password"
+laclasse_annuaire_deploy_user: erasme
+laclasse_annuaire_etablissements:
+  - nom: ERASME
+    id: 1
+    uai: "0699990Z"
+    users:
+      - nom: Levallois
+        prenom: "Pierre-Gilles"
+        sexe: M
+        login: thelogin
+        password: thepass
+        ident: VAA60001
+
+laclasse_annuaire_endpoint_diffusion_info: 'diffusionInfo'
+laclasse_annuaire_endpoint_personnel: 'etablissements'
+laclasse_annuaire_endpoint_profils: 'profils'
+laclasse_annuaire_endpoint_publipostage: 'publipostages'
+laclasse_annuaire_endpoint_regroupements: 'regroupements'
+laclasse_annuaire_endpoint_sso:  'sso/'
+laclasse_annuaire_endpoint_user: 'users/'
+
+laclasse_annuaire_main_path: 'api'
+laclasse_annuaire_port: 9292
+laclasse_annuaire_packages:
+  - libmysqlclient-dev
+  - libmagickcore-dev
+  - libmagickwand-dev
+  - python-mysqldb
+laclasse_annuaire_redis_root: 'someroot'
+laclasse_annuaire_repos: https://github.com/laclasse-com/service-annuaire.git
+laclasse_annuaire_reprise_datav2_url: https://www.dev.laclasse.com/pls/public/export_aaf.fichier
+# laclasse_annuaire_reprise_server_key: Define me
+laclasse_annuaire_ruby_version: "system"
+# laclasse_annuaire_secret_key: 'Define me'
+laclasse_annuaire_sso_component: 'sso'
+laclasse_annuaire_version: 'master'
+

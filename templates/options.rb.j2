@@ -1,0 +1,56 @@
+# -*- coding: utf-8 -*-
+
+{% import 'macros/url.j2' as url with context %}
+
+#
+# Configuration du service d'annuaire de l'ENT
+#
+ANNUAIRE = {
+  url:      '{{ url.trim_trailing_slashes(url.dedup_slashes(laclasse_main_url, "/", laclasse_annuaire_main_path)) }}' ,
+  api_key:  '{{ laclasse_services.annuaire.api_key }}',
+  app_id:   '{{ laclasse_services.annuaire.app_id }}',
+  api_mode: '{{ laclasse_services.annuaire.api_mode }}'
+}
+
+# application configuration
+module Configuration
+  LOG_LEVEL = Logger::DEBUG
+  LOG_DIR = "{{ laclasse_log_parent_dir | regex_replace('\/+$', '') }}/laclasse-annuaire/"
+  ALIMENTATION_SERVER = "{{ laclasse_annuaire_aaf_url | regex_replace('\/+$', '') }}"
+  REPRISE_SERVER_URL = "{{ laclasse_annuaire_reprise_datav2_url }}"
+  REPRISE_SERVER_KEY = "{{ laclasse_annuaire_reprise_server_key }}"
+  API_PATH ="{{ laclasse_services.annuaire.path }}"
+  ENVIRONMENT = '{{ laclasse_environment }}'
+
+  SMTP_SERVER="{{ laclasse_mail.smtp_server }}"
+  SMTP_PORT="{{ laclasse_mail.smtp_port }}"
+  SMTP_STARTLS="{{ laclasse_mail.smtp_starttls }}"
+
+  LOGSTASH_SERVER="{{ logstash_server }}"
+  LOGSTASH_PORT="{{ logstash_udp_json_port }}"
+end
+
+REDIS = {
+      host:       '{{ laclasse_redis_server }}',
+      port:       {{ laclasse_redis_port }},
+      redis_root: '{{ laclasse_redis_root }}'
+}
+
+# authentication configuration
+module AuthConfig
+  STORED_SESSION = {"CAS" => "{{ laclasse_annuaire_secret_key }}"}
+  REDIS_CONFIG  = {
+    :host => '{{ laclasse_redis_server }}',
+    :port => {{ laclasse_redis_port }}
+  }
+
+  REDIS_PATH     = "{{ laclasse_sso_redis_root }}"
+
+  # En second
+  SESSION_DURATION = 3600
+  SESSION_PATH = "SSO" # Path Redis
+
+  HTTP_HEADER = "X-Auth"
+  # une minute en seconds
+  SIGNATURE_VALIDITY = 86400
+end

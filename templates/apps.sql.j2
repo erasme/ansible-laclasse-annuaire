@@ -1,0 +1,21 @@
+{% for k in laclasse_services %}
+{% if laclasse_services[k]['app_id'] %}
+INSERT INTO `application` VALUES (
+  '{{laclasse_services[k]['app_id']}}',
+  "{{laclasse_services[k]['title']}}",
+  "{{laclasse_services[k]['description']}}",
+  '{{laclasse_services[k]['path'] | regex_replace('^\/', '')  | regex_replace('\/$', '') }}/',
+  1);
+{% endif %}
+{% endfor %}
+
+{% for k in laclasse_services %}
+{% if laclasse_services[k]['app_id'] %}
+INSERT INTO `ressource` VALUES (
+  '{{laclasse_services[k]['app_id']}}',
+  "APP");
+{% endif %}
+{% endfor %}
+
+INSERT INTO service (id,libelle,description,url) values ("RESOURCE","Ressource numerique","Ressource numerique","/ressources");
+

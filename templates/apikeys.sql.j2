@@ -1,0 +1,12 @@
+{% for k in laclasse_services %}
+{% if laclasse_services[k]['app_id'] %}
+INSERT INTO `application_key` VALUES (
+  '{{laclasse_services[k]['app_id']}}',
+  "{{laclasse_services[k]['api_key']}}",
+  '',
+  '0000-00-00 00:00:00',
+  0) ON DUPLICATE KEY UPDATE
+`application_key` = "{{laclasse_services[k]['api_key']}}");
+{% endif %}
+{% endfor %}
+

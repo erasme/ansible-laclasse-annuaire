@@ -1,0 +1,15 @@
+# DO NOT user root as database user
+# It will drop it's own rights on the mysql table !
+
+ruby_deploy_user: "{{ci_user}}"
+laclasse_annuaire_deploy_user: "{{ci_user}}"
+
+
+laclasse_annuaire_ruby_version: 2.1.2
+laclasse_annuaire_database:
+  name: annuaire_test
+  user: root
+  host: localhost
+  password: "foobar"
+
+laclasse_redis_server: localhost

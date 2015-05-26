@@ -1,0 +1,23 @@
+---
+galaxy_info:
+  author: Michel Blanc
+  description: laclasse annuaire role
+  company: ERASME/Grand-Lyon Métropole
+  license: MIT
+  min_ansible_version: 1.8
+
+  platforms:
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+      - all
+  categories:
+    - web
+
+dependencies:
+  - role: erasme.ruby-compiled
+    ruby_version: "{{ laclasse_annuaire_ruby_version }}"
+    ruby_default: "{{ laclasse_annuaire_ruby_version }}"
+    when: '"{{ laclasse_annuaire_ruby_version }}" != "system"'

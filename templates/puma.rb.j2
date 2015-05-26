@@ -1,0 +1,11 @@
+threads 1,8
+workers 3
+daemonize
+bind 'tcp://0.0.0.0:{{ laclasse_annuaire_port }}'
+environment '{{ laclasse_environment }}'
+directory '/home/{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/'
+pidfile '{{ laclasse_pid_dir }}/laclasse-annuaire/puma.pid'
+state_path '{{ laclasse_pid_dir }}/laclasse-annuaire/puma.state'
+activate_control_app 'tcp://0.0.0.0:{{ laclasse_annuaire_port + 1 }}', { auth_token: '{{ laclasse_puma_auth_token }}' }
+stdout_redirect '{{ laclasse_log_parent_dir }}/laclasse-annuaire/puma.log', '{{ laclasse_log_parent_dir }}/laclasse-annuaire/puma_error.log', true
+tag 'puma-laclasse-annuaire'

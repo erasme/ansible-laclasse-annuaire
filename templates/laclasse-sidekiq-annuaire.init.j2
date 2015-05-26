@@ -1,0 +1,54 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          laclasse-annuaire
+# Required-Start:    $local_fs $remote_fs
+# Required-Stop:     $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: annuaire  initscript
+# Description:       annuaire laclasse.com
+### END INIT INFO
+
+# (c) ERASME / laclasse.com
+
+# Do NOT "set -e"
+
+APP=laclasse-sidekiq-annuaire
+APP_PATH=~{{ laclasse_annuaire_deploy_user }}/${APP}
+DAEMON="${APP_PATH}/bin/sidekiq"
+CONTROL="${APP_PATH}/bin/sidekiqctl"
+
+SCRIPT_NAME=/etc/init.d/${APP}
+
+ARGS="-d -r ./workers/* -L {{ laclasse_log_parent_dir }}/laclasse-annuaire/sidekiq.log -P {{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid"
+CONTROL_TIMEOUT=5
+CONTROL_ARGS="{{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid $CONTROL_TIMEOUT"
+
+# Creates PID dir (this dir is in tmps, so it needs to be created at every boot)
+if [ -e {{laclasse_pid_dir}} ]; then
+  mkdir -p {{laclasse_pid_dir}}
+  chown {{ laclasse_annuaire_deploy_user }} {{laclasse_pid_dir}}
+fi
+
+. /lib/init/vars.sh
+
+# Exit if the package is not installed
+[ -x "$DAEMON" ] || exit 0
+[ -x "$CONTROL" ] || exit 0
+
+case "$1" in
+  start)
+  su - {{ laclasse_annuaire_deploy_user }} -c "cd $APP_PATH; $DAEMON $ARGS"
+  ;;
+  stop)
+  su - {{ laclasse_annuaire_deploy_user }} -c "cd $APP_PATH; $CONTROL shutdown $CONTROL_ARGS"
+  ;;
+  restart)
+  su - {{ laclasse_annuaire_deploy_user }} -c "cd $APP_PATH; $CONTROL shutdown $CONTROL_ARGS && sleep $CONTROL_TIMEOUT && $DAEMON $ARGS"
+  ;;
+  *)
+  echo "Usage: $SCRIPT_NAME {start|stop|restart}" >&2
+  exit 3
+  ;;
+esac
+

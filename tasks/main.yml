@@ -1,0 +1,25 @@
+- name: Send notification message via Slack
+  local_action:
+    module: slack
+    domain: "{{ laclasse_slack.host }}"
+    token: "{{ laclasse_slack.token }}"
+    msg: "3...2...1... annuaire v{{ laclasse_annuaire_version }} @ {{ inventory_hostname }} :rocket: "
+    channel: "{{ laclasse_slack.channel }}"
+  ignore_errors: true
+  tags:
+    - laclasse
+    - laclasse:annuaire
+
+- include: annuaire.yml tags=laclasse,laclasse:annuaire
+
+- name: Send notification message via Slack
+  local_action:
+    module: slack
+    domain: "{{ laclasse_slack.host }}"
+    token: "{{ laclasse_slack.token }}"
+    msg: "annuaire (version {{ git_tag.stdout }}) successfully deployed on {{ inventory_hostname }} :thumbsup:"
+    channel: "{{ laclasse_slack.channel }}"
+  ignore_errors: true
+  tags:
+    - laclasse
+    - laclasse:annuaire

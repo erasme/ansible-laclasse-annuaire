@@ -1,0 +1,6 @@
+Dockerfile
+docker/
+.tags
+.vagrant
+tests/ansible-laclasse-annuaire/playbooks/
+tests/ansible-laclasse-annuaire/requirements.yml

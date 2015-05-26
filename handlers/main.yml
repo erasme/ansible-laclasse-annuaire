@@ -1,0 +1,26 @@
+- name: Restart laclasse-annuaire services
+  assert: 
+    that:
+      - True == True
+  changed_when: True == True
+  notify:
+    - Restart laclasse-annuaire
+    - Restart laclasse-sidekiq-annuaire
+
+- name: Restart laclasse-annuaire
+  service: name=laclasse-annuaire state=restarted
+  notify: Check laclasse-annuaire
+
+- name: Restart laclasse-sidekiq-annuaire
+  service: name=laclasse-sidekiq-annuaire state=restarted
+  notify: Check laclasse-sidekiq-annuaire
+
+- name: Check laclasse-annuaire
+  wait_for: port={{ laclasse_annuaire_port }} delay=5 timeout=10
+  register: docheck_ann
+  changed_when: docheck_ann is defined and not docheck_ann.changed
+
+- name: Check laclasse-sidekiq-annuaire
+  wait_for: path={{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid delay=1 timeout=5
+  register: docheck_sdq
+  changed_when: docheck_sdq is defined and not docheck_sdq.changed

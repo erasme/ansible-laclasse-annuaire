@@ -1,0 +1,31 @@
+#
+# Configuration de la base de données de Backend
+#
+# {{ ansible_managed }}
+#
+
+require 'logger'
+
+DB_CONFIG = {
+  name:     '{{ laclasse_annuaire_database.name }}',
+  host:     '{{ laclasse_annuaire_database.host }}',
+  user:     '{{ laclasse_annuaire_database.user }}',
+  password: '{{ laclasse_annuaire_database.password }}',
+  charset:  'utf8'
+}
+
+DB = Sequel.mysql2( DB_CONFIG[:name],
+                    host: DB_CONFIG[:host],
+                    user: DB_CONFIG[:user],
+                    password: DB_CONFIG[:password],
+                    charset: DB_CONFIG[:charset] )
+
+# DB.extension :pagination
+Sequel.extension(:migration)
+DB.extension :pagination # => > 4.x
+# Sequel.extension(:pagination) # => < 4.x
+
+DB.run("SET SESSION group_concat_max_len = 1000000;")
+
+# Uncomment this if you want to log all DB queries
+# DB.loggers << Logger.new($stdout)
