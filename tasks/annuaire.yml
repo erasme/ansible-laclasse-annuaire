@@ -36,6 +36,7 @@
     dest=~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/
     version={{ laclasse_annuaire_version }}
     accept_hostkey=true
+    force=yes
   register: new_version
   notify: 
     - Restart laclasse-annuaire services
@@ -234,5 +235,5 @@
 
 - name: Saves firewall
   shell: iptables-save > {{ firewall.rules_file }}
-  when: needs_iptables | changed and laclasse_environment == 'production'
+  when: needs_iptables | changed and laclasse_environment == 'production' and firewall is defined
 
