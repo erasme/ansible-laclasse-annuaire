@@ -24,9 +24,9 @@ ARGS="--daemon -C${APP_PATH}/config/puma.rb ${APP_PATH}/config.ru"
 CONTROL_ARGS="-F${APP_PATH}/config/puma.rb "
 
 # Creates PID dir (this dir is in tmps, so it needs to be created at every boot)
-if [ -e {{laclasse_pid_dir}} ]; then
-  mkdir -p {{laclasse_pid_dir}}
-  chown {{ laclasse_annuaire_deploy_user }} {{laclasse_pid_dir}}
+if [ ! -e {{ laclasse_pid_dir }} ]; then
+  mkdir -p {{ laclasse_pid_dir }}
+  chown {{ laclasse_annuaire_deploy_user }} {{ laclasse_pid_dir }}
 fi
 
 . /lib/init/vars.sh
