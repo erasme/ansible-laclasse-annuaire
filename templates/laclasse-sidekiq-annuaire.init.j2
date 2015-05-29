@@ -25,9 +25,9 @@ CONTROL_TIMEOUT=5
 CONTROL_ARGS="{{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid $CONTROL_TIMEOUT"
 
 # Creates PID dir (this dir is in tmps, so it needs to be created at every boot)
-if [ ! -e {{ laclasse_pid_dir }} ]; then
-  mkdir -p {{ laclasse_pid_dir }}
-  chown {{ laclasse_annuaire_deploy_user }} {{ laclasse_pid_dir }}
+if [ ! -e {{ laclasse_pid_dir }}/${APP} ]; then
+  mkdir -p {{ laclasse_pid_dir }}/${APP}
+  chown {{ laclasse_annuaire_deploy_user }} {{ laclasse_pid_dir }}/${APP}
 fi
 
 . /lib/init/vars.sh
