@@ -22,7 +22,7 @@ install_ansible ${test_ansible_version}
 ansible-galaxy install -r requirements.yml
 
 # Check syntax first, and then that the playbook runs
-assert_playbook_runs -e "ci_user=$CI_USER"
+assert_playbook_runs -e "ci_user=$CI_USER" -vvvv
 
 # Check that the playbook is idempotent
 assert_playbook_idempotent -e "ci_user=$CI_USER" 

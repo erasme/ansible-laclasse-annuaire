@@ -29,7 +29,7 @@ laclasse_slack:
   channel: none
   token: none
 ## Logstash server parameters
-logstash_server: logstash.example.org
+logstash_server: localhost
 logstash_udp_json_port: 1234
 
 # Some external definitions we depend on

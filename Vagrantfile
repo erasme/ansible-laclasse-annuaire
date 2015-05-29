@@ -1,11 +1,11 @@
 # -*- mode: ruby -*-
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
-  config.vm.define "ansible-laclasse-annuaire" do |nginx|
-  end
+  # config.vm.define "ansible-laclasse-annuaire" do |nginx|
+  # end
 
   config.vm.provider "virtualbox" do |v|
-    # v.name   = "ansible-laclasse-annuaire"
+    v.name   = "ansible-laclasse-annuaire"
     v.memory = 1024
   end
 
