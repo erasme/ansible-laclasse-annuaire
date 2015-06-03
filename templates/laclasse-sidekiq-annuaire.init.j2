@@ -14,7 +14,7 @@
 # Do NOT "set -e"
 
 APP=laclasse-sidekiq-annuaire
-APP_PATH=~{{ laclasse_annuaire_deploy_user }}/${APP}
+APP_PATH=~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire
 DAEMON="${APP_PATH}/bin/sidekiq"
 CONTROL="${APP_PATH}/bin/sidekiqctl"
 
@@ -23,12 +23,6 @@ SCRIPT_NAME=/etc/init.d/${APP}
 ARGS="-d -r ./workers/* -L {{ laclasse_log_parent_dir }}/laclasse-annuaire/sidekiq.log -P {{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid"
 CONTROL_TIMEOUT=5
 CONTROL_ARGS="{{ laclasse_pid_dir }}/laclasse-annuaire/sidekiq.pid $CONTROL_TIMEOUT"
-
-# Creates PID dir (this dir is in tmps, so it needs to be created at every boot)
-if [ ! -e {{ laclasse_pid_dir }}/${APP} ]; then
-  mkdir -p {{ laclasse_pid_dir }}/${APP}
-  chown {{ laclasse_annuaire_deploy_user }} {{ laclasse_pid_dir }}/${APP}
-fi
 
 . /lib/init/vars.sh
 

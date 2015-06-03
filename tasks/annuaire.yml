@@ -17,7 +17,7 @@
 - name: Creates deploy user
   user: 
     name={{ laclasse_annuaire_deploy_user }} 
-    comment="Laclasse annuaire user"
+    comment="laclasse user"
     state=present
 
 - name: Creates deploy directory
