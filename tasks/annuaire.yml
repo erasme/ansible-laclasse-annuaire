@@ -226,15 +226,15 @@
   notify:
     - Restart laclasse-annuaire services
   with_items:
-    - laclasse-annuaire
-    - laclasse-sidekiq-annuaire
+   - laclasse-annuaire
+   - laclasse-sidekiq-annuaire
   tags: laclasse:annuaire:config
 
 - name: Check if firewall is opened
   shell: iptables-save
   register: needs_iptables
   changed_when: needs_iptables.stdout.find("laclasse-annuaire") == -1
-  when: laclasse_environment == 'production'
+  when: laclasse_environment == 'production' and firewall is defined
 
 - name: Open firewall
   shell: iptables -A TCP_IN -p tcp -m tcp --dport {{ laclasse_annuaire_port }} -j ACCEPT -m comment --comment laclasse-annuaire
@@ -243,5 +243,5 @@
 
 - name: Saves firewall
   shell: iptables-save > {{ firewall.rules_file }}
-  when: needs_iptables | changed and laclasse_environment == 'production' and firewall is defined
+  when: needs_iptables | changed and laclasse_environment == 'production'
 
