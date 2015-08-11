@@ -22,9 +22,9 @@ module Configuration
   API_PATH ="{{ laclasse_services.annuaire.path }}"
   ENVIRONMENT = '{{ laclasse_environment }}'
 
-  SMTP_SERVER="{{ laclasse_mail.smtp_server }}"
-  SMTP_PORT="{{ laclasse_mail.smtp_port }}"
-  SMTP_STARTLS="{{ laclasse_mail.smtp_starttls }}"
+  SMTP_SERVER="{{ laclasse_mail_smtp_server }}"
+  SMTP_PORT="{{ laclasse_mail_smtp_port }}"
+  SMTP_STARTLS="{{ laclasse_mail_smtp_starttls }}"
 
   LOGSTASH_SERVER="{{ logstash_server }}"
   LOGSTASH_PORT="{{ logstash_udp_json_port }}"

@@ -57,17 +57,23 @@
 - name: Check if a bundle is required
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
   sudo: true
-  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle check --no-color || true'
-  changed_when: bundle_required.stdout != "The Gemfile's dependencies are satisfied"
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle check --no-color --path ~/bundler_shared/ || true'
+  changed_when: not bundle_required.stdout | search("The Gemfile's dependencies are satisfied")
   register: bundle_required
+
+- name: Bundles pack application
+  sudo_user: "{{ laclasse_annuaire_deploy_user }}"
+  sudo: true
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle pack --no-color --all --path  ~/bundler_shared/'
+  when: bundle_required|changed
 
 - name: Bundles application
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
   sudo: true
-  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle --no-color'
+  shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'bundle --no-color --deployment --path  ~/bundler_shared/'
   when: bundle_required|changed
-  notify: 
-    - Restart laclasse-annuaire services
+  notify: Restart laclasse-annuaire services
+# use  --deployment ?
 
 - name: Adds version.json
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
@@ -118,6 +124,7 @@
   mysql_db: name="{{ laclasse_annuaire_database.name }}" state=present
   delegate_to: "{{database_delegate_hostname}}"
   register: db_created
+  when: not laclasse_annuaire_skip_database 
 
 - name: Creates database user
   mysql_user:
@@ -127,6 +134,7 @@
     host="{{ database_client_hostname }}"
   delegate_to: "{{ database_delegate_hostname }}"
   register: dbuser_created
+  when: not laclasse_annuaire_skip_database
 
 - name: Check if a migration is needed
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
@@ -192,7 +200,7 @@
   sudo: true
   shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc "bundle binstubs puma"
   register: puma_has_been_binstubbed
-  changed_when: '"Skipped puma since it already exists" in puma_has_been_binstubbed'
+  changed_when: not '"Skipped puma since it already exists" in puma_has_been_binstubbed'
   notify: Restart laclasse-annuaire
 
 - name: Binstubs sidekiq
@@ -200,7 +208,7 @@
   sudo: true
   shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc "bundle binstubs sidekiq"
   register: sidekiq_has_been_binstubbed
-  changed_when: '"Skipped sidekiq and sidekiqctl since they already exist" in sidekiq_has_been_binstubbed'
+  changed_when: not '"Skipped sidekiq and sidekiqctl since they already exist" in sidekiq_has_been_binstubbed'
   notify: Restart laclasse-sidekiq-annuaire
 
 - name: Deploys init script

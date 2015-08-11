@@ -17,8 +17,9 @@ galaxy_info:
     - web
 
 dependencies:
-  - role: erasme.ruby-compiled
+  - role: ansible-ruby-compiled
     ruby_version: "{{ laclasse_annuaire_ruby_version }}"
     ruby_default: "{{ laclasse_annuaire_ruby_version }}"
     ruby_deploy_user: "{{ laclasse_annuaire_deploy_user }}"
+    tags: laclasse:annuaire
     when: '"{{ laclasse_annuaire_ruby_version }}" != "system"'

@@ -4,13 +4,13 @@
 laclasse_environment: develop
 ## Parent directory in which we'll crete log dir for this role
 laclasse_log_parent_dir: /var/log
+
 ## Mail setup
-laclasse_mail:
-  smtp_server: some.smtp.server
-  smtp_port: 587
-  smtp_starttls: true
-  domain: example.org
-  imap_backends:
+laclasse_mail_smtp_server: some.smtp.server
+laclasse_mail_smtp_port: 587
+laclasse_mail_smtp_starttls: true
+laclasse_mail_domain: example.org
+laclasse_mail_imap_backends:
     - imap1.example.org
     - imap2.example.org
 ## Main server URL
@@ -85,7 +85,9 @@ laclasse_annuaire_database:
   user: username
   host: dbhost
   password: "password"
+
 laclasse_annuaire_deploy_user: erasme
+
 laclasse_annuaire_etablissements:
   - nom: ERASME
     id: 1
@@ -118,7 +120,9 @@ laclasse_annuaire_repos: https://github.com/laclasse-com/service-annuaire.git
 laclasse_annuaire_reprise_datav2_url: https://www.dev.laclasse.com/pls/public/export_aaf.fichier
 # laclasse_annuaire_reprise_server_key: Define me
 laclasse_annuaire_ruby_version: "system"
+## Skip database operations (create db & user)
+laclasse_annuaire_skip_database: "{{ laclasse_skip_database | default(true) }}"
 # laclasse_annuaire_secret_key: 'Define me'
 laclasse_annuaire_sso_component: 'sso'
-laclasse_annuaire_version: 'master'
+laclasse_annuaire_version: 'develop'
 

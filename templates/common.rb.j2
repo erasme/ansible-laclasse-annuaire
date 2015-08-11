@@ -9,7 +9,7 @@ module CASAUTH
   CONFIG = {
     host: "{{ laclasse_sso_server }}",
     ssl: '{{ laclasse_sso_ssl }}',
-    port: {{ laclasse_sso_port }},
+    port: {{ laclasse_sso_port_external }},
     disable_ssl_verification: {{ laclasse_sso_disable_ssl_verification }},
     login_url: "{{ laclasse_sso_login_url }}",
     service_validate_url: "{{ laclasse_sso_service_validate_url }}",
