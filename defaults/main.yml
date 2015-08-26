@@ -119,7 +119,7 @@ laclasse_annuaire_redis_root: 'someroot'
 laclasse_annuaire_repos: https://github.com/laclasse-com/service-annuaire.git
 laclasse_annuaire_reprise_datav2_url: https://www.dev.laclasse.com/pls/public/export_aaf.fichier
 # laclasse_annuaire_reprise_server_key: Define me
-laclasse_annuaire_ruby_version: "system"
+laclasse_annuaire_ruby_version: "{{ laclasse_ruby_version | default('2.2.2')  }}"
 ## Skip database operations (create db & user)
 laclasse_annuaire_skip_database: "{{ laclasse_skip_database | default(true) }}"
 # laclasse_annuaire_secret_key: 'Define me'
