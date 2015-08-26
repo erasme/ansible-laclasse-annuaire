@@ -109,7 +109,7 @@ laclasse_annuaire_endpoint_sso:  'sso/'
 laclasse_annuaire_endpoint_user: 'users/'
 
 laclasse_annuaire_main_path: 'api'
-laclasse_annuaire_port: 9292
+laclasse_annuaire_port: 42600
 laclasse_annuaire_packages:
   - libmysqlclient-dev
   - libmagickcore-dev
