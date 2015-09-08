@@ -41,8 +41,14 @@
   notify:
     - Restart laclasse-annuaire services
 
+- name: Sets new_version if skipped
+  set_fact:
+    new_version:
+      changed: false
+
 - name: Gets current tag
   shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/ && git describe --always --tag
+  always_run: yes
   changed_when: false
   register: git_tag
 
