@@ -164,7 +164,7 @@
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
   sudo: true
   shell: cd ~{{ laclasse_annuaire_deploy_user }}/laclasse-annuaire/; bash -lc 'RACK_ENV={{ laclasse_environment }} bundle exec rake db:bootstrap'
-  when: db_created|changed or dbuser_created|changed
+  when: db_created|changed
   notify:
     - Restart laclasse-annuaire services
 
