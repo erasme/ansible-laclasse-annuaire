@@ -140,7 +140,7 @@
     host="{{ database_client_hostname }}"
   delegate_to: "{{ database_delegate_hostname }}"
   register: dbuser_created
-  # when: not laclasse_annuaire_skip_database
+  when: not laclasse_annuaire_skip_database
 
 - name: Check if a migration is needed
   sudo_user: "{{ laclasse_annuaire_deploy_user }}"
